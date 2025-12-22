@@ -85,7 +85,7 @@ public sealed class PunchyPlayer : Component
 	{
 		if ( IsProxy ) return;
 		
-		if ( Input.Pressed( "Slide" ) ) Slide();
+		//if ( Input.Pressed( "Slide" ) ) Slide();//add a slide control in project settings and uncomment this line if you want a slide ability
 
 		if ( Input.Pressed( "Attack1" ) ) Punch();
 
@@ -175,3 +175,4 @@ public sealed class PunchyPlayer : Component
 	#endregion
 	
 }
+
