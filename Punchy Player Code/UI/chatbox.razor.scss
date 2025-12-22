@@ -1,0 +1,38 @@
+chatbox
+{
+  font-family: Poppins;
+  font-size: 22px;
+  text-stroke: 4px black;
+  color: white;
+  
+  >.chatboxVisible
+  {
+    position: absolute;
+    background-color: rgba(0,0,0,0.3);
+    padding: 10px;
+    bottom: 5.8%;
+    left:.3%;
+    width:35%;
+    height:45%;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: 10px;
+    overflow: scroll;
+  }
+
+  >.TextEntryVisible
+  {
+    position: absolute;
+    background-color: rgba(0,0,0,0.6);
+    padding: 10px;
+    bottom:.3%;
+    left:.3%;
+    width:35%;
+    height:5%;
+    border-radius: 10px;
+    pointer-events: all;
+    align-items: flex-end;
+    white-space: pre-line;
+    overflow: hidden;
+  }
+}
