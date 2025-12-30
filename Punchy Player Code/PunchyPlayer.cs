@@ -12,10 +12,13 @@ public sealed class PunchyPlayer : Component
 	private readonly SoundEvent _punchSound = ResourceLibrary.Get<SoundEvent>("sounds/Punchy Player Sounds/punch.sound"),
 		_missSound =  ResourceLibrary.Get<SoundEvent>("sounds/Punchy Player Sounds/miss.sound");
 	
-	private SkinnedModelRenderer _modelRenderer;
+	public SkinnedModelRenderer ModelRenderer;
 	private PlayerController _player;
 
-	public PlayerChat _playerChat;
+	private PlayerChat _playerChat;
+	private InventoryManager _inventoryManager;
+	
+	[Property] private GameObject _textGO; 
 	
 
 	protected override void OnStart()
@@ -33,6 +36,12 @@ public sealed class PunchyPlayer : Component
 		if(WorldPosition.z < -3000) Teleport( new Vector3( 0,0,0 ) );
 	}
 
+	private void ShowTextPopUp( string message, Vector3 position, Rotation rot )
+	{
+		var popup = _textGO.Clone( position, rot );
+		popup.GetComponent<TextRenderer>(  ).Text = message;
+	}
+	
 	#region player controls
 	
 	[Rpc.Owner]
@@ -43,7 +52,7 @@ public sealed class PunchyPlayer : Component
 		Vector3 slideVector = Vector3.Forward * Scene.Camera.LocalRotation * SlideSpeed;
 		
 		_player.Jump(new Vector3( slideVector.x, slideVector.y, 0 ));
-		AnimateSlide();
+		AnimatePlayer(ModelRenderer,"special_movement_states", 3);
 		
 		_slideAnimationTimer = SlideAnimationTime;
 		_slideCooldownTimer = SlideCooldownTime;
@@ -67,6 +76,15 @@ public sealed class PunchyPlayer : Component
 		}
 		else if ( traceCheckPunchable.Hit )
 		{
+			if ( traceCheckPunchable.GameObject.Tags.Has( "ore" ) )
+			{
+				_inventoryManager.PutItemInInventory( traceCheckPunchable.GameObject.Name );
+				ShowTextPopUp( "+1 " + traceCheckPunchable.GameObject.Name,  
+					traceCheckPunchable.GameObject.WorldPosition + new Vector3( 0,0,70 ), 
+					Rotation.LookAt( traceCheckPunchable.Direction ) );
+				
+			}
+
 			Sound.Play(  _punchSound , WorldPosition );
 		}
 		else
@@ -74,7 +92,8 @@ public sealed class PunchyPlayer : Component
 			Sound.Play( _missSound , WorldPosition );
 		}
 		
-		AnimatePunch();
+		AnimatePlayer( ModelRenderer, "holdtype", 5 );
+		AnimatePlayer( ModelRenderer, "b_attack", true );
 		_punchTimer = PunchTime;
 		_punchStanceCooldownTimer = PunchStanceCooldownTime;
 	}
@@ -85,30 +104,35 @@ public sealed class PunchyPlayer : Component
 	{
 		if ( IsProxy ) return;
 		
-		//if ( Input.Pressed( "Slide" ) ) Slide();//add a slide control in project settings and uncomment this line if you want a slide ability
+		if ( Input.Pressed( "Slide" ) ) Slide();
 
 		if ( Input.Pressed( "Attack1" ) ) Punch();
 
 		if ( Input.Pressed( "chat" ) ) _playerChat.ChatInputPressed();
+		
+		if( Input.Keyboard.Pressed( "tab" ))
+			if ( _inventoryManager.ShowInventory ) _inventoryManager.ShowInventory = false;
+		else _inventoryManager.ShowInventory = true;
 	}
 	
 	[Rpc.Owner]
 	private void UpdateTimers()
 	{
 		if ( _slideAnimationTimer > 0 ) _slideAnimationTimer -= Time.Delta;
-		else ResetSlideStance();
+		else AnimatePlayer( ModelRenderer, "special_movement_states", 0 );
 		if ( _slideCooldownTimer > 0 ) _slideCooldownTimer -= Time.Delta;
 		if( _punchTimer > 0 ) _punchTimer -= Time.Delta;
 		if( _punchStanceCooldownTimer > 0 ) _punchStanceCooldownTimer -= Time.Delta;
-		else ResetPunchStance();
+		else AnimatePlayer( ModelRenderer, "holdtype", 0 );
 	}
 	
 	[Rpc.Owner]
 	private void SetVars()
 	{
-		_modelRenderer = GameObject.GetComponentInChildren<SkinnedModelRenderer>();
+		ModelRenderer = GameObject.GetComponentInChildren<SkinnedModelRenderer>();
 		_playerChat = GameObject.GetComponent<PlayerChat>();
 		_player = GameObject.GetComponent<PlayerController>();
+		_inventoryManager = Scene.Directory.FindByName( "Game Manager" ).First().GetComponent<InventoryManager>(  );
 	}
 	
 	#region player modifiers
@@ -128,42 +152,17 @@ public sealed class PunchyPlayer : Component
 	#endregion
 	
 	#region Animation methods
-	
-	[Rpc.Broadcast]
-	public void Idle()
-	{
-		_modelRenderer?.Set( "special_idle_states", 1 );
-	}
-	
-	[Rpc.Broadcast]
-	public void DeIdle()
-	{
-		_modelRenderer?.Set( "special_idle_states", 0 );
-	}
-	
-	[Rpc.Broadcast]
-	private void AnimatePunch()
-	{
-		_modelRenderer?.Set( "holdtype", 5 );
-		_modelRenderer?.Set( "b_attack", true );
-	}
 
 	[Rpc.Broadcast]
-	private void ResetPunchStance()
+	public void AnimatePlayer( SkinnedModelRenderer mr, string animation, int value )
 	{
-		_modelRenderer?.Set( "holdtype", 0 );
+		mr?.Set(animation, value );
 	}
 	
 	[Rpc.Broadcast]
-	private void AnimateSlide()
+	public void AnimatePlayer( SkinnedModelRenderer mr, string animation, bool value )
 	{
-		_modelRenderer?.Set( "special_movement_states", 3 );
-	}
-
-	[Rpc.Broadcast]
-	private void ResetSlideStance()
-	{
-		_modelRenderer?.Set( "special_movement_states", 0 );
+		mr?.Set(animation, value );
 	}
 	
 	[Rpc.Broadcast]
@@ -175,4 +174,3 @@ public sealed class PunchyPlayer : Component
 	#endregion
 	
 }
-
