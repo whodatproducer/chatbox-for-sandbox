@@ -32,7 +32,7 @@ public sealed class PlayerChat : Component
 	{
 		ShowChatbox(true);//the chatbox contains the chat log, the textEntryBox is where you type
 		_openChatLocal = true;
-		_punchyPlayer.Idle();	//enter idle stance while chatting
+		_punchyPlayer.AnimatePlayer(_punchyPlayer.ModelRenderer, "special_idle_states", 1);	//enter idle stance while chatting
 	}
 
 	private void CloseChat()
@@ -42,7 +42,7 @@ public sealed class PlayerChat : Component
 		_chatManager.CurrentTextEntry = ""; 
 		_openChatLocal = false;
 		_chatboxIsOpen = false;
-		_punchyPlayer.DeIdle(); //exit idle stance
+		_punchyPlayer.AnimatePlayer(_punchyPlayer.ModelRenderer, "special_idle_states", 0); //exit idle stance
 		
 		HideChatbox();
 	}
