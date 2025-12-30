@@ -16,10 +16,6 @@ public sealed class PunchyPlayer : Component
 	private PlayerController _player;
 
 	private PlayerChat _playerChat;
-	private InventoryManager _inventoryManager;
-	
-	[Property] private GameObject _textGO; 
-	
 
 	protected override void OnStart()
 	{
@@ -34,12 +30,6 @@ public sealed class PunchyPlayer : Component
 		CheckForInputs();
 		
 		if(WorldPosition.z < -3000) Teleport( new Vector3( 0,0,0 ) );
-	}
-
-	private void ShowTextPopUp( string message, Vector3 position, Rotation rot )
-	{
-		var popup = _textGO.Clone( position, rot );
-		popup.GetComponent<TextRenderer>(  ).Text = message;
 	}
 	
 	#region player controls
@@ -76,16 +66,8 @@ public sealed class PunchyPlayer : Component
 		}
 		else if ( traceCheckPunchable.Hit )
 		{
-			if ( traceCheckPunchable.GameObject.Tags.Has( "ore" ) )
-			{
-				_inventoryManager.PutItemInInventory( traceCheckPunchable.GameObject.Name );
-				ShowTextPopUp( "+1 " + traceCheckPunchable.GameObject.Name,  
-					traceCheckPunchable.GameObject.WorldPosition + new Vector3( 0,0,70 ), 
-					Rotation.LookAt( traceCheckPunchable.Direction ) );
-				
-			}
-
-			Sound.Play(  _punchSound , WorldPosition );
+			//hit object with punchable tag
+			Sound.Play( _punchSound , WorldPosition );
 		}
 		else
 		{
@@ -109,10 +91,6 @@ public sealed class PunchyPlayer : Component
 		if ( Input.Pressed( "Attack1" ) ) Punch();
 
 		if ( Input.Pressed( "chat" ) ) _playerChat.ChatInputPressed();
-		
-		if( Input.Keyboard.Pressed( "tab" ))
-			if ( _inventoryManager.ShowInventory ) _inventoryManager.ShowInventory = false;
-		else _inventoryManager.ShowInventory = true;
 	}
 	
 	[Rpc.Owner]
@@ -132,7 +110,6 @@ public sealed class PunchyPlayer : Component
 		ModelRenderer = GameObject.GetComponentInChildren<SkinnedModelRenderer>();
 		_playerChat = GameObject.GetComponent<PlayerChat>();
 		_player = GameObject.GetComponent<PlayerController>();
-		_inventoryManager = Scene.Directory.FindByName( "Game Manager" ).First().GetComponent<InventoryManager>(  );
 	}
 	
 	#region player modifiers
@@ -174,3 +151,4 @@ public sealed class PunchyPlayer : Component
 	#endregion
 	
 }
+
