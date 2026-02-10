@@ -9,6 +9,6 @@ to use:
   <img width="861" height="249" alt="image" src="https://github.com/user-attachments/assets/e08305ff-34c8-4cb4-bff0-7014df82be9b" />
 
 6. attach PunchyPlayer.cs component and PlayerChat.cs component to the player prefab
+7. you can add a voice transmitter to the player prefab to enable voice chat. you may want to set it to push to talk.
 
-
-**This also includes a punch and slide ability for the player. you will have to add a slide control in the project settings for it to work, or you can just disable it
+**This also includes a punch and slide ability for the player. you will have to add a slide control in the project settings for it to work, or you can just not use it
